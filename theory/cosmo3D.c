@@ -619,6 +619,7 @@ double get_class_s8(struct file_content *fc, int *status){
    strcpy(fc->name[parser_length-1],"A_s");
    sprintf(fc->value[parser_length-1],"%e",A_s);
  }
+ cosmology.A_s = A_s;
     //printf("determined A_s(sigma_8=%e) = %e\n", cosmology.sigma_8,A_s);
 }
 strcpy(fc->name[1],"non linear");

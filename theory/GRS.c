@@ -158,5 +158,3 @@ double P_obs_mt(double k_ref, double mu_ref, int nz, GRSpara_mt  G, int i, int j
   return pow(DA_DAref,-2.)*H_Href*P_g_mt(k,mu,nz,G,i,j)
     *exp(-pow(k*mu*sigma_r_z,2.))/(1.+0.5*pow(k*mu*sigma_r_p,2.));
 }
-
-

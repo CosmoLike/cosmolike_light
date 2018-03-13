@@ -24,7 +24,7 @@
 #include "basics.c"
 #include "structs.c"
 #include "parameters.c"
-#include "../emu17/P_cb/emu.c"
+#include "../emu13/emu.c"
 #include "recompute.c"
 #include "cosmo3D.c"
 #include "redshift.c"
@@ -366,7 +366,6 @@ double log_multi_like(double OMM, double S8, double NS, double W0,double WA, dou
   if(like.SN==1) log_L_prior+=log_L_SN();
   if(like.BAO==1) log_L_prior+=log_L_BAO();
   if(like.Planck==1) log_L_prior+=log_L_Planck();
-  if(like.Planck15_BAO_w0wa==1) log_L_prior+=log_L_Planck15_BAO_w0wa(); //CH
   if(like.IA!=0) log_L_prior+=log_L_ia();
   if(like.IA!=0) log_L_prior+=log_like_f_red();
   if(like.wlphotoz!=0) log_L_prior+=log_L_wlphotoz();
@@ -398,19 +397,15 @@ double log_multi_like(double OMM, double S8, double NS, double W0,double WA, dou
     set_data_cgl(ell_Cluster,pred, start);
   }
   chisqr=0.0;
-  //CH BEGINS (commented out when running external prior alone)
-  //for (i=0; i<like.Ndata; i++){
-  //  for (j=0; j<like.Ndata; j++){
-  //    a=(pred[i]-data_read(1,i))*invcov_read(1,i,j)*(pred[j]-data_read(1,j));
-  //    chisqr=chisqr+a;
-  //  }
- //CH ENDS   
+  for (i=0; i<like.Ndata; i++){
+    for (j=0; j<like.Ndata; j++){
+      a=(pred[i]-data_read(1,i))*invcov_read(1,i,j)*(pred[j]-data_read(1,j));
+      chisqr=chisqr+a;
+    }
    //  if (fabs(data_read(1,i)/pred[i]-1.0) >1.e-4){
    // printf("%d %le %le %le\n",i,data_read(1,i),pred[i],data_read(1,i)/pred[i]);
    //  }
-  //CH BEGINS (commented out when running external prior alone)
-  //}
-  //CH ENDS
+  }
   if (chisqr<0.0){
     printf("errror: chisqr < 0\n");
   }
@@ -523,7 +518,7 @@ double log_like_wrapper(input_cosmo_params ic, input_nuisance_params in)
   init_Pdelta("Halofit",0.8,0.35);
   //compute_data_vector("fid",0.3156,0.831,0.9645,-1.,0.,0.0491685,0.6727,1.35,1.5,1.65,1.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.05,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.01,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5.92,1.1,-0.47,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.72+log(1.e+14*0.7),1.08,0.0,0.25,0.9,0.9,0.9,0.9);
 
-  init_data_inv("cov/cov_LSST_2.600000e+01_1.800000e+04_Rmin10_Ncl25_Ntomo10_2pt_clusterN_clusterWL_inv","datav/LSST_all_2pt_clusterN_clusterWL_fid");
+ init_data_inv("cov/cov_LSST_2.600000e+01_1.800000e+04_Rmin10_Ncl25_Ntomo10_2pt_clusterN_clusterWL_inv","datav/LSST_all_2pt_clusterN_clusterWL_fid");
   
 
   // begin = clock();

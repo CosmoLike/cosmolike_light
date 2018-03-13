@@ -195,7 +195,7 @@ void init_ggl_tomo(){
   for (int i = 0; i < tomo.clustering_Nbin; i++){
     for(int j = 0; j<tomo.shear_Nbin;j++){
       n += test_zoverlap(i,j);
-      //printf("GGL combinations zl=%d zs=%d accept=%d; <z_l> = %.3f, <z_s> = %.3f\n",i,j,test_zoverlap(i,j), zmean(i),zmean_source(j));
+      printf("GGL combinations zl=%d zs=%d accept=%d; <z_l> = %.3f, <z_s> = %.3f  %e %e\n",i,j,test_zoverlap(i,j), zmean(i),zmean_source(j),ggl_efficiency(i,j), survey.ggl_overlap_cut);
     }
   }
   tomo.ggl_Npowerspectra = n;

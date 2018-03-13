@@ -39,7 +39,7 @@ double b1_per_bin_pass_evolv(double z, int ni){
    return (gbias.b[ni]-1.)/z_evolv_passiv +1.;
 }
 double b1_growth_scaling(double z, int ni){
-  return gbias.b[0]/(growfac (1./(z+1.))/growfac (1.));
+  return gbias.b[0]*growfac (1./(z+1.))/growfac (1.);
 }
 double b1_powerlaw(double z, int ni){
   return gbias.b[0]*pow(1+z,gbias.b[1]);

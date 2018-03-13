@@ -22,7 +22,6 @@ void update_cosmopara (cosmopara *C){
   C->sigma_8 = cosmology.sigma_8;
   C->A_s = cosmology.A_s;
   C->n_spec = cosmology.n_spec;
-  C->alpha_s = cosmology.alpha_s;
   C->w0 = cosmology.w0;
   C->wa = cosmology.wa;
   C->omb = cosmology.omb;
@@ -92,7 +91,7 @@ int recompute_expansion(cosmopara C){ //rules for recomputing growth factor & co
 }
 
 int recompute_Delta(cosmopara C){ //rules for recomputing early time power spectrum Delta_L
-  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec|| C.alpha_s != cosmology.alpha_s){return 1;}
+  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec){return 1;}
   if (cosmology.A_s){
     if(C.A_s != cosmology.A_s){return 1;}
   }
@@ -103,7 +102,7 @@ int recompute_Delta(cosmopara C){ //rules for recomputing early time power spect
 }
 
 int recompute_cosmo3D(cosmopara C){
-  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec|| C.alpha_s != cosmology.alpha_s ||  C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGSigma != cosmology.MGSigma || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
+  if (C.Omega_m != cosmology.Omega_m || C.Omega_v != cosmology.Omega_v || C.Omega_nu != cosmology.Omega_nu || C.M_nu != cosmology.M_nu || C.h0 != cosmology.h0 || C.omb != cosmology.omb || C.n_spec != cosmology.n_spec ||  C.w0 != cosmology.w0 || C.wa != cosmology.wa || C.MGSigma != cosmology.MGSigma || C.MGmu != cosmology.MGmu || C.M_nu != cosmology.M_nu){return 1;}
   if (cosmology.A_s){
     if(C.A_s != cosmology.A_s){return 1;}
   }

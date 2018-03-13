@@ -36,9 +36,8 @@ double amax_lens(int i);
 
 //routines for association of a pair redshift bin numbers and power spectrum tomography bin
 int test_kmax(double l, int zl); //valid l + lens/clustering redshift combination?
-int test_kmax_shear(double l, int z1, int z2); ////valid l + z1,z2 redshift combination?
 int test_zoverlap_cov(int zl, int zs); //restrict NG covaraince computation to source behind lens configurations
-int test_zoverlap(int zl, int zs); //valid lens + source redshift bin combination?
+int test_zoverlap (int zl, int zs); //valid lens + source redshift bin combination?
 int test_zoverlap_c (int zc, int zs); //valid cluster + source redshift bin combination?
 int N_ggl(int zl, int zs);//(z_l,z_s) -> N_tomo_ggl
 int ZL(int Nbin);//N_tomo_ggl -> z_l
@@ -97,21 +96,6 @@ int test_kmax(double l, int zl){ //test whether the (l,zl) bin is in the linear 
   if((l+0.5)/chiref[zl] < kmax){ return 1;}
   return 0;
 }
-
-// int test_kmax_shear(double l, int z1, int z2){ //test whether the (l,z1,z2) bin is in the R_mins_shear criteria - return 1 if true, 0 otherwise
-//   static double chiref[10] = {-1.};
-//   if (chiref[0] < 0){
-//     int i;
-//     for (i = 0; i < tomo.shear_Nbin; i++){
-//       chiref[i] = chi(1./(1.+0.5*(tomo.shear_zmin[i]+tomo.shear_zmax[i])));
-//     }
-//   }
-//   double R_min = like.Rmin_shear; //set minimum scale to which we trust our shear model, in Mpc/h
-//   double kmax = constants.twopi/R_min*cosmology.coverH0;
-//   //printf("%le %le\n",kmax,(l+0.5)/chiref[z1]);
-//   if(((l+0.5)/chiref[z1] < kmax) && ((l+0.5)/chiref[z2] < kmax)){ return 1;}
-//   return 0;
-// }
 
 int test_zoverlap(int zl, int zs){ //test whether source bin zs is behind lens bin zl
   if (ggl_efficiency(zl,zs) > survey.ggl_overlap_cut) {return 1;}
@@ -369,6 +353,12 @@ double zdistr_histo_1(double z, void *params) //return nz(z) based on redshift f
 }
 
 
+double n_of_z(double z, int nz){
+ double sigma = 0.15;
+ double x = 1.0+0.5*nz-z;
+ return 1./sqrt(2.*M_PI*sigma*sigma)*exp(-x*x/(2.*sigma*sigma));
+}
+
 double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with binned distributions; j =-1 -> no tomography; j>= 0 -> tomography bin j
 {
   static double **table = 0;
@@ -376,18 +366,18 @@ double zdistr_photoz(double zz,int j) //returns n(ztrue | j), works only with bi
   static double zhisto_max,zhisto_min;
   static nuisancepara N;
   static int zbins =2000;
-  if (table ==0){ //force zmin, zmax, to match supplied file
+  if (redshift.shear_photoz == -1){return n_of_z(zz,j);}
+  if (table ==0 && redshift.shear_photoz ==4){ //if multihisto, force zmin, zmax, tomo bins to match supplied file
     FILE *ein;
     double *z_v, space;
-    int i,k,nz, N=3;
-    if (redshift.shear_photoz ==4) {N = tomo.shear_Nbin;}
+    int i,k,nz;
     nz = line_count(redshift.shear_REDSHIFT_FILE);
     z_v=create_double_vector(0, nz-1);
     ein=fopen(redshift.shear_REDSHIFT_FILE,"r");
     for (i=0;i<nz;i++){
       fscanf(ein, "%le", &z_v[i]);
       if (i > 0 && z_v[i] < z_v[i-1]){break;}
-      for (k = 0; k < N; k++){fscanf(ein,"%le",&space);}
+      for (k = 0; k < tomo.shear_Nbin; k++){fscanf(ein,"%le",&space);}
     }
     fclose(ein);
     redshift.shear_zdistrpar_zmin = fmax(z_v[0],0.01);
@@ -615,18 +605,18 @@ double pf_photoz(double zz,int j) //returns n(ztrue, j), works only with binned 
   static double zhisto_max,zhisto_min;
   static int zbins = 2000;
   static nuisancepara N;
-  if (table == 0){ //force zmin, zmax to match supplied file
+  if (redshift.clustering_photoz == -1){return n_of_z(zz,j);}
+  if (table == 0 && redshift.clustering_photoz == 4){ //if multihisto, force zmin, zmax, tomo bins to match supplied file
     FILE *ein;
     double *z_v, space;
-    int i,k,nz, N = 3;
-    if (redshift.clustering_photoz ==4) {N = tomo.clustering_Nbin;}
+    int i,k,nz;
     nz = line_count(redshift.clustering_REDSHIFT_FILE);
     z_v=create_double_vector(0, nz-1);
     ein=fopen(redshift.clustering_REDSHIFT_FILE,"r");
     for (i=0;i<nz;i++){
       fscanf(ein, "%le", &z_v[i]);
       if (i > 0 && z_v[i] < z_v[i-1]){break;}
-      for (k = 0; k < N; k++){fscanf(ein,"%le",&space);}
+      for (k = 0; k < tomo.clustering_Nbin; k++){fscanf(ein,"%le",&space);}
     }
     fclose(ein);
     redshift.clustering_zdistrpar_zmin = fmax(z_v[0],0.01);

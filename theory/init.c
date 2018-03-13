@@ -9,14 +9,14 @@ void init_survey(char *surveyname);
 void init_galaxies(char *SOURCE_ZFILE, char *LENS_ZFILE, char *lensphotoz, char *sourcephotoz, char *galsample);
 void init_cosmo();
 void init_cosmo_runmode(char *runmode);
-void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, double Rmin_bias, int cluster_rich_Nbin, int Ntomo);
+void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, double Rmin_bias, int cluster_rich_Nbin);
 void init_binning_real(int Nt, double min, double max);
 void init_probes(char *probes);
 void init_probes_real(char *probes);
 
 void set_galaxies_LSST(double density);
 void set_galaxies_DES(double density);
-
+void set_galaxies_LSST_like(double density); //DESC LSST-like specfications; for DESC forecasts
 void set_galaxies_LSST_gold(double density);
 void set_galaxies_DES_Y1(void);
 void set_galaxies_DES_SV(double density);
@@ -37,7 +37,7 @@ void init_clphotoz_cmass();
 void init_clphotoz_LSST_gold();
 void init_clphotoz_source();
 void init_clusterMobs();
-void set_equal_tomo_bins();
+void set_equal_tomo_bins(int Ntomo);
 void init_IA(char *model,char *lumfct);
 void init_HOD_rm();
 void init_Pdelta();
@@ -277,8 +277,7 @@ void init_cosmo_runmode(char *runmode)
   sprintf(pdeltaparams.runmode,"%s",runmode);
   printf("pdeltaparams.runmode =%s\n",pdeltaparams.runmode);
 }
-
-void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, double Rmin_bias, int cluster_rich_Nbin, int Ntomo)
+void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, double Rmin_bias, int cluster_rich_Nbin)
 {
   printf("-------------------------------------------\n");
   printf("Initializing Binning\n");
@@ -289,7 +288,6 @@ void init_binning_fourier(int Ncl, double lmin, double lmax, double lmax_shear, 
   like.lmin= lmin; //std=20
   like.lmax= lmax; //15,000
   like.lmax_shear = lmax_shear; //5000
-  tomo.shear_Nbin=Ntomo;
   //compute cluster ell bins acc to 2PCF l-bins
   double ell;
   int i,k=0;
@@ -331,18 +329,7 @@ void init_priors(char *cosmoPrior1, char *cosmoPrior2, char *cosmoPrior3, char *
   if(strcmp(cosmoPrior1,"Planck_BAO_SN_Aubourg")==0)like.Aubourg_Planck_BAO_SN=1;
   if(strcmp(cosmoPrior2,"DES_SN")==0) like.SN=1;
   if(strcmp(cosmoPrior3,"PhotoBAO")==0) like.BAO=1;
-  //CH BEGINS
-  //if(strcmp(cosmoPrior4,"Planck")==0) like.Planck=1;
-  if(strcmp(cosmoPrior4,"Planck")==0){ 
-    like.Planck=1;  
-  } else if(strcmp(cosmoPrior4,"Planck15_BAO_w0wa")==0){
-    like.Planck15_BAO_w0wa=1;  
-  } else if(strcmp(cosmoPrior4,"Planck15_BAO_H070p6_JLA_w0wa")==0){
-    like.Planck15_BAO_H070p6_JLA_w0wa=1;  
-  } else {
-    printf("Error from like_fourier.c: cosmoPrior4 can only be Planck, Planck15_BAO_w0wa or Planck15_BAO_H070p6_JLA_w0wa."); //CH: no real error handling.
-  }
-  //CH ENDS
+  if(strcmp(cosmoPrior4,"Planck")==0) like.Planck=1;  
 }
 
 
@@ -398,9 +385,8 @@ void init_galaxies(char *SOURCE_ZFILE, char *LENS_ZFILE, char *lensphotoz, char 
   
   sprintf(redshift.shear_REDSHIFT_FILE,"%s",SOURCE_ZFILE);
   printf("PATH TO SOURCE_ZFILE: %s\n",redshift.shear_REDSHIFT_FILE);
-  
   init_source_sample(sourcephotoz);
-  
+
   sprintf(redshift.clustering_REDSHIFT_FILE,"%s",LENS_ZFILE);
   printf("\n");
   printf("PATH TO LENS_ZFILE: %s\n",redshift.clustering_REDSHIFT_FILE);
@@ -510,13 +496,7 @@ void init_probes(char *probes)
     like.pos_pos=1;
     printf("Position-Position computation initialized\n");
   }
-  if(strcmp(probes,"ggl_cl")==0){
-    like.Ndata=like.Ncl*(tomo.ggl_Npowerspectra+tomo.clustering_Npowerspectra);
-    like.shear_pos=1;
-    like.pos_pos=1;
-    printf("Shear-Position computation initialized\n");
-    printf("Position-Position computation initialized\n");
-  }
+
   if(strcmp(probes,"all_2pt")==0){
     like.Ndata=like.Ncl*(tomo.shear_Npowerspectra+tomo.ggl_Npowerspectra+tomo.clustering_Npowerspectra);
     like.shear_shear=1;
@@ -736,7 +716,7 @@ void init_lens_sample(char *lensphotoz, char *galsample)
     }
     if(strcmp(galsample,"gold")==0){ 
       init_clphotoz_LSST_gold();
-      set_galaxies_LSST_gold(18.0);
+      set_galaxies_LSST_gold(40.0);
     }
      if(strcmp(galsample,"cmass")==0){
       init_clphotoz_cmass();
@@ -761,7 +741,7 @@ void init_source_sample_()
   if(strcmp(survey.sourcephotoz,"multihisto")==0) redshift.shear_photoz=4;
   //printf("Source Sample Redshift Errors set to %s: redshift.shear_photoz=%d\n",survey.sourcephotoz,redshift.shear_photoz);
 
-  if (redshift.shear_photoz!=4)  set_equal_tomo_bins();
+  if (redshift.shear_photoz!=4)  set_equal_tomo_bins(tomo.shear_Nbin);
   for (i=0;i<tomo.shear_Nbin; i++)
   {
     //printf("zmean_source=%f\n",zmean_source(i));
@@ -788,37 +768,37 @@ void init_source_sample(char *sourcephotoz)
   }
 
   printf("Source Sample Redshift Errors set to %s: redshift.shear_photoz=%d\n",sourcephotoz,redshift.shear_photoz);
-  
+
   if (strcmp(survey.name,"DES_SV")==0){
-    set_equal_tomo_bins();
+    set_equal_tomo_bins(3);
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage3();
       set_wlphotoz_priors_stage3();  
     }
   }
   if (strcmp(survey.name,"DES_Y1")==0 || strcmp(survey.name,"DES")==0){
-    set_equal_tomo_bins();
+    set_equal_tomo_bins(5);
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage3();
       set_wlphotoz_priors_stage3();  
     }
   }
   if (strcmp(survey.name,"Euclid")==0){
-    set_equal_tomo_bins();
+    set_equal_tomo_bins(5);
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage4();
       set_wlphotoz_priors_stage4();  
     }
   }
   if (strcmp(survey.name,"HSC")==0 ){
-    set_equal_tomo_bins();
+    set_equal_tomo_bins(5);
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage3();
       set_wlphotoz_priors_stage3();  
     }
   }
   if (strcmp(survey.name,"LSST")==0 || strcmp(survey.name,"WFIRST")==0) {
-    set_equal_tomo_bins();
+    set_equal_tomo_bins(10);
     if ((redshift.shear_photoz==1) || (redshift.shear_photoz==2) || (redshift.shear_photoz==3)){
       init_wlphotoz_stage4();
       set_wlphotoz_priors_stage4();  
@@ -833,13 +813,12 @@ void init_baryons()
   printf("todo\n");
 }
 
-void set_equal_tomo_bins()
+void set_equal_tomo_bins(int Ntomo)
 {
   int k,j;
   double frac, zi;
-  
-  tomo.shear_Npowerspectra=(int) (tomo.shear_Nbin*(tomo.shear_Nbin+1)/2);
-  
+  tomo.shear_Nbin=Ntomo;
+  tomo.shear_Npowerspectra=(int) (Ntomo*(Ntomo+1)/2);
   zdistr_histo_1(0.1, NULL);
   int zbins =2000;
   double da = (redshift.shear_zdistrpar_zmax-redshift.shear_zdistrpar_zmin)/(1.0*zbins);
@@ -856,7 +835,7 @@ void set_equal_tomo_bins()
   printf("\n");
   printf("Source Sample - Tomographic Bin limits:\n");
   for(k=0;k<tomo.shear_Nbin-1;k++){
-    frac=(k+1.)/(1.*tomo.shear_Nbin)*sum[zbins-1];
+    frac=(k+1.)/(1.*Ntomo)*sum[zbins-1];
     j = 0;
     while (sum[j]< frac){
       j++;
@@ -1000,37 +979,103 @@ void set_galaxies_DES(double density)
   printf("%d GGL Powerspectra\n",tomo.ggl_Npowerspectra);
   init_BAO_DES();
 }
-
-void set_galaxies_LSST_gold(double density)
+void set_galaxies_LSST_like(double density)
 { //redmagic-like lens sample beyond DES depth
   int i,j,n;
+  
+  // next 3 lines can perhaps go, beacuse they are being set automatically
+  redshift.clustering_zdistrpar_zmin = 0.;
+  redshift.clustering_zdistrpar_zmax = 3.5;
+  redshift.clustering_histogram_zbins= 75;
   
   survey.n_lens = density; //guestimate of stage 4 lens sample with excellent photo-z
   printf("Number density of lens galaxies=%le\n",survey.n_lens);
 
-  tomo.clustering_Nbin        = 5;
-  tomo.clustering_Npowerspectra = 5;
-  tomo.clustering_zmax[0] = 0.4;
-  tomo.clustering_zmax[1] = 0.6;
-  tomo.clustering_zmax[2] = 0.8;
-  tomo.clustering_zmax[3] = 1.0;
-  tomo.clustering_zmax[4] = 1.2;
-  // tomo.clustering_zmax[5] = 0.8;
-  // tomo.clustering_zmax[6] = 0.9;
-  // tomo.clustering_zmax[7] = 1.0;
-  // tomo.clustering_zmax[8] = 1.1;
-  // tomo.clustering_zmax[9] = 1.2;
 
-  tomo.clustering_zmin[0] = 0.2;
-  tomo.clustering_zmin[1] = 0.4;
-  tomo.clustering_zmin[2] = 0.6;
-  tomo.clustering_zmin[3] = 0.8;
-  tomo.clustering_zmin[4] = 1.0;
-  // tomo.clustering_zmin[5] = 1.2;
-  // tomo.clustering_zmin[6] = 0.8;
-  // tomo.clustering_zmin[7] = 0.9;
-  // tomo.clustering_zmin[8] = 1.0;
-  // tomo.clustering_zmin[9] = 1.1;
+  tomo.clustering_Nbin        = 10;
+  tomo.clustering_Npowerspectra = 10;
+  tomo.clustering_zmax[0] = 0.2;
+  tomo.clustering_zmax[1] = 0.4;
+  tomo.clustering_zmax[2] = 0.6;
+  tomo.clustering_zmax[3] = 0.8;
+  tomo.clustering_zmax[4] = 1.0;
+  tomo.clustering_zmax[5] = 1.2;
+  tomo.clustering_zmax[6] = 1.4;
+  tomo.clustering_zmax[7] = 1.6;
+  tomo.clustering_zmax[8] = 1.8;
+  tomo.clustering_zmax[9] = 2.0;
+
+  tomo.clustering_zmin[0] = 0.05;
+  tomo.clustering_zmin[1] = 0.2;
+  tomo.clustering_zmin[2] = 0.4;
+  tomo.clustering_zmin[3] = 0.6;
+  tomo.clustering_zmin[4] = 0.8;
+  tomo.clustering_zmin[5] = 1.0;
+  tomo.clustering_zmin[6] = 1.2;
+  tomo.clustering_zmin[7] = 1.4;
+  tomo.clustering_zmin[8] = 1.6;
+  tomo.clustering_zmin[9] = 1.8;
+  printf("\n");
+  printf("Lens Sample: LSST like - Tomographic Bin limits:\n");
+  for (i =0; i < tomo.clustering_Nbin ; i++){
+    printf("min=%le max=%le\n",tomo.clustering_zmin[i],tomo.clustering_zmax[i]);
+  }
+  printf("\n");
+  printf("Setting Galaxy Bias - Passive Evolution in z-bins:\n");
+
+  for (i =0; i < tomo.clustering_Nbin ; i++){
+    double z = 0.5*(tomo.clustering_zmin[i] + tomo.clustering_zmax[i]);
+    gbias.b[i] = 0.95/growfac(1./(1.+z));
+    printf("Bin %d: galaxy bias=%le\n",i,gbias.b[i]);
+  }
+  n = 0;
+  for (i = 0; i < tomo.clustering_Nbin; i++){
+    for(j = 0; j<tomo.shear_Nbin;j++){
+      n += test_zoverlap(i,j);
+      printf("GGL combinations zl=%d zs=%d accept=%d\n",i,j,test_zoverlap(i,j));
+    }
+  }
+  tomo.ggl_Npowerspectra = n; 
+  printf("%d GGL Powerspectra\n",tomo.ggl_Npowerspectra);
+  if (strcmp(survey.name,"LSST")==0) init_BAO_LSST();
+  if (strcmp(survey.name,"WFIRST")==0) init_BAO_WFIRST();
+} 
+void set_galaxies_LSST_gold(double density)
+{ //redmagic-like lens sample beyond DES depth
+  int i,j,n;
+  
+  // next 3 lines can perhaps go, beacuse they are being set automatically
+  redshift.clustering_zdistrpar_zmin = 0.;
+  redshift.clustering_zdistrpar_zmax = 3.5;
+  redshift.clustering_histogram_zbins= 75;
+  
+  survey.n_lens = density; //guestimate of stage 4 lens sample with excellent photo-z
+  printf("Number density of lens galaxies=%le\n",survey.n_lens);
+
+
+  tomo.clustering_Nbin        = 10;
+  tomo.clustering_Npowerspectra = 10;
+  tomo.clustering_zmax[0] = 0.382940014498;
+  tomo.clustering_zmax[1] = 0.522576410401;
+  tomo.clustering_zmax[2] = 0.646638132366;
+  tomo.clustering_zmax[3] = 0.768971236241;
+  tomo.clustering_zmax[4] = 0.897480798253;
+  tomo.clustering_zmax[5] = 1.04015552136;
+  tomo.clustering_zmax[6] = 1.20895143424;
+  tomo.clustering_zmax[7] = 1.42820693242;
+  tomo.clustering_zmax[8] = 1.77139821814;
+  tomo.clustering_zmax[9] = 3.49999;
+
+  tomo.clustering_zmin[0] = 0.15;
+  tomo.clustering_zmin[1] = 0.382940014498;
+  tomo.clustering_zmin[2] = 0.522576410401;
+  tomo.clustering_zmin[3] = 0.646638132366;
+  tomo.clustering_zmin[4] = 0.768971236241;
+  tomo.clustering_zmin[5] = 0.897480798253;
+  tomo.clustering_zmin[6] = 1.04015552136;
+  tomo.clustering_zmin[7] = 1.20895143424;
+  tomo.clustering_zmin[8] = 1.42820693242;
+  tomo.clustering_zmin[9] = 1.77139821814;
 
   printf("\n");
   printf("Lens Sample: LSST redmagic- Tomographic Bin limits:\n");
