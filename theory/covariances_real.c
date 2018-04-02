@@ -88,13 +88,13 @@ double bin_cov_NG_shear_shear_tomo(double l1,double l2, int z1, int z2, int z3, 
   if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
     {
     if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
-    logsmin = log(20.);
-    logsmax = log(1.e+4);
+    logsmin = log(1.);
+    logsmax = log(2.e+4);
     ds = (logsmax - logsmin)/(Ntab - 1.);
     llog1 = logsmin;
     for (i=0; i<Ntab; i++, llog1+=ds) {
       ll1 = exp(llog1);
-      llog2 = llog1;
+      llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
         table[i][j]=log(cov_NG_shear_shear_tomo(ll1,ll2,z1,z2,z3,z4));
@@ -225,7 +225,7 @@ double cov_NG_shear_shear_real(double theta1, double theta2, int z1,int z2, int 
     if (pm1==0) x2 = gsl_sf_bessel_zero_Jnu (4.,n)/theta1;
     n+=2;
   }
-  return res/(4.0*M_PI*M_PI*survey.area*survey.area_conversion_factor);
+  return res/(4.0*M_PI*M_PI);
 }
 
 
@@ -281,13 +281,13 @@ double bin_cov_NG_cl_cl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
     {
     if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
-    logsmin = log(20.);
-    logsmax = log(1.e+4);
+    logsmin = log(1.);
+    logsmax = log(2.e+4);
     ds = (logsmax - logsmin)/(Ntab - 1.);
     llog1 = logsmin;
     for (i=0; i<Ntab; i++, llog1+=ds) {
       ll1 = exp(llog1);
-      llog2 = llog1;
+      llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
         table[i][j]=log(cov_NG_cl_cl_tomo(ll1,ll2,z1,z2,z3,z4));
@@ -315,13 +315,13 @@ double bin_cov_NG_cl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
     {
     if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
-    logsmin = log(20.);
-    logsmax = log(1.e+4);
+    logsmin = log(1.);
+    logsmax = log(2.e+4);
     ds = (logsmax - logsmin)/(Ntab - 1.);
     llog1 = logsmin;
     for (i=0; i<Ntab; i++, llog1+=ds) {
       ll1 = exp(llog1);
-      llog2 = llog1;
+      llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
         table[i][j]=log(cov_NG_cl_shear_tomo(ll1,ll2,z1,z2,z3,z4));
@@ -350,13 +350,13 @@ double bin_cov_NG_cl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
     {
     if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
-    logsmin = log(20.);
-    logsmax = log(1.e+4);
+    logsmin = log(1.);
+    logsmax = log(2.e+4);
     ds = (logsmax - logsmin)/(Ntab - 1.);
     llog1 = logsmin;
     for (i=0; i<Ntab; i++, llog1+=ds) {
       ll1 = exp(llog1);
-      llog2 = llog1;
+      llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
         table[i][j]=log(cov_NG_cl_gl_tomo(ll1,ll2,z1,z2,z3,z4));
@@ -482,7 +482,7 @@ double cov_NG_cl_cl_real(double theta1, double theta2, int z1,int z2, int z3, in
     x2 = gsl_sf_bessel_zero_J0 (n)/theta1;
     n+=2;
   }
-  return res/(4.0*M_PI*M_PI*survey.area*survey.area_conversion_factor);
+  return res/(4.0*M_PI*M_PI);
 }
 double cov_NG_cl_shear_real(double theta1, double theta2, int z1,int z2, int z3, int z4, int pm){
   double array[8],res = 0., result = 1.;
@@ -502,7 +502,7 @@ double cov_NG_cl_shear_real(double theta1, double theta2, int z1,int z2, int z3,
     x2 = gsl_sf_bessel_zero_J0 (n)/theta1;
     n+=2;
   }
-  return res/(4.0*M_PI*M_PI*survey.area*survey.area_conversion_factor);
+  return res/(4.0*M_PI*M_PI);
 }
 double cov_NG_cl_gl_real(double theta1, double theta2, int z1,int z2, int z3, int z4){
   double array[7],res = 0., result = 1.;
@@ -522,7 +522,7 @@ double cov_NG_cl_gl_real(double theta1, double theta2, int z1,int z2, int z3, in
     x2 = gsl_sf_bessel_zero_J0 (n)/theta1;
     n+=2;
   }
-  return res/(4.0*M_PI*M_PI*survey.area*survey.area_conversion_factor);
+  return res/(4.0*M_PI*M_PI);
 }
 
 
@@ -676,13 +676,13 @@ double bin_cov_NG_gl_gl_tomo(double l1,double l2, int z1, int z2, int z3, int z4
   if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
     {
     if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
-    logsmin = log(20.);
-    logsmax = log(1.e+4);
+    logsmin = log(1.);
+    logsmax = log(2.e+4);
     ds = (logsmax - logsmin)/(Ntab - 1.);
     llog1 = logsmin;
     for (i=0; i<Ntab; i++, llog1+=ds) {
       ll1 = exp(llog1);
-      llog2 = llog1;
+      llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
         table[i][j]=log(cov_NG_gl_gl_tomo(ll1,ll2,z1,z2,z3,z4));
@@ -710,13 +710,13 @@ double bin_cov_NG_gl_shear_tomo(double l1,double l2, int z1, int z2, int z3, int
   if (Z1!=z1 || Z2!=z2 || Z3!=z3 || Z4!=z4 )
     {
     if (table==0) { table = create_double_matrix(0, Ntab-1, 0, Ntab-1);}
-    logsmin = log(20.);
-    logsmax = log(1.e+4);
+    logsmin = log(1.);
+    logsmax = log(2.e+4);
     ds = (logsmax - logsmin)/(Ntab - 1.);
     llog1 = logsmin;
     for (i=0; i<Ntab; i++, llog1+=ds) {
       ll1 = exp(llog1);
-      llog2 = llog1;
+      llog2 = logsmin;
       for (j=0; j<Ntab; j++, llog2+=ds) {
         ll2 = exp(llog2);
         table[i][j]=log(cov_NG_gl_shear_tomo(ll1,ll2,z1,z2,z3,z4));
@@ -842,7 +842,7 @@ double cov_NG_gl_gl_real(double theta1, double theta2, int z1l,int z1s, int z2l,
     x2 = gsl_sf_bessel_zero_Jnu (2.,n)/theta1;
     n+=2;
   }
-  return res/(4.0*M_PI*M_PI*survey.area*survey.area_conversion_factor);
+  return res/(4.0*M_PI*M_PI);
 }
 double cov_NG_gl_shear_real(double theta1, double theta2, int z1l,int z1s, int z3, int z4, int pm){
   double array[8],res = 0., result = 1.;
@@ -861,7 +861,7 @@ double cov_NG_gl_shear_real(double theta1, double theta2, int z1l,int z1s, int z
     x2 = gsl_sf_bessel_zero_Jnu (2.,n)/theta1;
     n+=2;
   }
-  return res/(4.0*M_PI*M_PI*survey.area*survey.area_conversion_factor);
+  return res/(4.0*M_PI*M_PI);
 }
 
 //Gaussian part of the G-G lensing covariance Cov(gamma_t(theta1,z1l,z1s),gamma_t(theta2,z2l,z2s)); theta1, theta2, Dtheta in radian, z1l,z2l: lens redshift bins, z1s,z2s: source redshift bins
