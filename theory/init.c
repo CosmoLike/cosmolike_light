@@ -399,7 +399,7 @@ void init_galaxies(char *SOURCE_ZFILE, char *LENS_ZFILE, char *lensphotoz, char 
   if (strcmp(galsample,"source")==0) set_clphotoz_priors_source();
 }
 
-void init_clusters()
+/*void init_clusters()
 {
   printf("\n");
   printf("-----------------------------------\n");
@@ -411,7 +411,7 @@ void init_clusters()
      set_clusters_DES();
 
  set_clusterMobs_priors(); 
-}
+}*/
 
 
 void init_cmb(char * cmbName) {
@@ -1236,7 +1236,7 @@ void set_galaxies_source(void)
 
 
 /*********** set cluster parameters for DES forecasts ********/
-void set_clusters_LSST(){
+/*void set_clusters_LSST(){
   int i,j;
   //N200-M relationship from Rykoff et al. 2012 (http://iopscience.iop.org/0004-637X/746/2/178/pdf/0004-637X_746_2_178.pdf) - Eq. B4 for \Delta = 200 mean version
   nuisance.cluster_Mobs_lgM0 = 1.72+log(1.e+14*0.7); //back to Msun/h instead of Msun/h70 normalization
@@ -1337,7 +1337,7 @@ void set_clusters_DES(){
   //    printf ("Richness bin %d: %e - %e (%e Msun/h - %e Msun/h), N(z = 0.3) = %e, N(z = 0.7)\n", i,Cluster.N_min[i],Cluster.N_max[i],exp(lgM_obs(Cluster.N_min[i], 0.75)),exp(lgM_obs(Cluster.N_max[i], 0.75)),N_N200(0,i),N_N200(2,i));
   //  }
   printf("Clusters set to DES\n");
-}
+}*/
 
 void set_galaxies_benchmark_LSST()
 { 
