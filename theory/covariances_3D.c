@@ -234,7 +234,7 @@ double int_for_variance (double logk, void *params){
   double *ar = (double *) params;
   double k = exp(logk);
   double x = pow(4.0*ar[1],0.5)*k*chi(ar[0]); //theta_s*k*chi(a)
-  return k*k/constants.twopi*p_lin(k,ar[0])*pow(gsl_sf_bessel_J1(x)/x,2.0);
+  return k*k/constants.twopi*p_lin(k,ar[0])*pow(2.*gsl_sf_bessel_J1(x)/x,2.0);
 }
 
 double survey_variance (double a, double fsky){
