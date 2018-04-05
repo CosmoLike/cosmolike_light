@@ -144,6 +144,7 @@ typedef struct {
      int N_norm;
      int N_r_3d;
      int N_k_3d;
+     int N_a_halo;
 }Ntab;
 
 
@@ -160,6 +161,7 @@ Ntab Ntable = {
 50, //N_norm
 50, //N_r_3d
 25, //N_k_3d
+20, //N_a_halo
 };
  
 
@@ -193,6 +195,8 @@ void SVD_inversion(gsl_matrix *cov, gsl_matrix *inverseSVD,int Nmatrix)
         for (j=0;j<Nmatrix;j++){
             gsl_matrix_set(inverseSVD,i,j,gsl_vector_get(x,j));
         }
+        gsl_vector_free(b);
+        gsl_vector_free(x);
     }
     gsl_matrix_free(V);
     gsl_matrix_free(U);

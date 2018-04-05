@@ -56,6 +56,7 @@ double Pdelta(double k_NL,double a); //k in coverH0 units
 //double int_for_chi(double a,void * args);
 double f_K(double chi);
 double chi(double a);
+double a_chi(double chi1);
 extern void emu(double *xstar, double *ystar, double *kstar);
 
 //c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1386,7 +1387,35 @@ double chi(double a)
   if (res < 0){printf ("interpolation error in chi(%e)\n",a); res=0.01;}
   return res;
 }
-
+//auxilary function to look up a(chi)
+double a_chi(double chi1){
+  static gsl_spline * a_spline = NULL;
+  static gsl_interp_accel * a_accel = NULL;
+  static cosmopara C;
+  static double chi_max =-1.;
+  if (!a_spline){
+    a_spline = gsl_spline_alloc(gsl_interp_cspline, Ntable.N_a);
+    a_accel = gsl_interp_accel_alloc();
+  }
+  if (recompute_cosmo3D(C)){
+    update_cosmopara(&C);
+    double *table_a,*table_chi;
+    table_a  = create_double_vector(0, Ntable.N_a-1);
+    table_chi  = create_double_vector(0, Ntable.N_a-1);
+    for (int i = 0; i < Ntable.N_a; i++){
+      table_a[i] = 1.0 - (1.0 - 0.99*limits.a_min)/(Ntable.N_a-1.)*(double)i;
+      table_chi[i] = int_gsl_integrate_medium_precision(int_for_chi,NULL, table_a[i], 1.,NULL,1000);
+   //   printf("%d %e %e\n",i,table_a[i],table_chi[i]);
+    }
+    chi_max = int_gsl_integrate_medium_precision(int_for_chi,NULL, limits.a_min, 1.,NULL,1000);
+    gsl_spline_init(a_spline, table_chi, table_a, Ntable.N_a);
+    free_double_vector(table_a,0, Ntable.N_a-1);
+    free_double_vector(table_chi,0, Ntable.N_a-1);
+  }
+  if (chi1 <=0.0){return 1.0;}
+  if (chi1 > chi_max){printf("called a_chi(chi) with chi > chi(limits.a_min\nEXIT\n");exit(1);}
+  return gsl_spline_eval(a_spline,chi1,a_accel);
+}
 
 /*===============================calculating the angular diameter distance f_K BS01 2.4, 2.30: f_K is a radial function that, depending on the curvature of the Universe, is a trigonometric, linear, or hyperbolic function of chi  */
 double f_K(double chi)
