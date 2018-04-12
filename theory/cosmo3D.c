@@ -1047,10 +1047,19 @@ double Delta_NL_emu(double k_NL,double a)
     dk = (logkmax - logkmin)/(Ntable.N_k_nlin-1.);
 
     Delta_halofit(table_P_NL_halofit,logkmin, logkmax, dk, da);
+    COSMO_emu[0] = cosmology.Omega_m*cosmology.h0*cosmology.h0;
+    COSMO_emu[1] = cosmology.omb*cosmology.h0*cosmology.h0;
+    COSMO_emu[2] = cosmology.sigma_8;   
+    COSMO_emu[3] = cosmology.h0;
+    COSMO_emu[4] = cosmology.n_spec;
+    COSMO_emu[5] = cosmology.w0;
+    COSMO_emu[6] = cosmology.wa;
+    COSMO_emu[7] = cosmology.Omega_nu*cosmology.h0*cosmology.h0;
+
     determine_emu_cosmo_calib(COSMO_emu, &calibflag);    
     printf("Cosmo %le %le %le %le %le %le %le %le\n",COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5],COSMO_emu[6],COSMO_emu[7]);
     if(calibflag==0){
-      printf("INSIDE Emulator cosmology\n");
+    //  printf("INSIDE Emulator cosmology\n");
       aa = limits.a_min;
       //binning in k and a must be the same as in  Delta_halofit
       for (i=0; i<Ntable.N_a; i++, aa +=da) {
@@ -1062,10 +1071,11 @@ double Delta_NL_emu(double k_NL,double a)
           COSMO_emu[8]=0.01;
         }
         if(aa >= a_min_emu){
+          COSMO_emu[6] = cosmology.wa; // must be set within redshift loop since emu internally resets the COSMO_emu value to (-w_0-w_a)^(1/4)
           emu(COSMO_emu,ystar,kstar);
           for (k=0; k<351; k++){
-            p_emu[k]=ystar[k];
-            //printf("%le %le\n",kstar[k],p_emu[k]);
+            p_emu[k]=ystar[k]*kstar[k]*kstar[k]*kstar[k]/(2.0*constants.pi_sqr);
+           // printf("%le %le %le\n",kstar[k],p_emu[k],Delta_NL_Halofit(kstar[k]/cosmology.h0,aa));
           }
           gsl_spline_init (timspline, kstar, p_emu, 351);
           emu_min=log(p_emu[0]/Delta_NL_Halofit(kstar[0]/cosmology.h0,aa));
@@ -1131,10 +1141,11 @@ double Delta_NL_emu(double k_NL,double a)
         }
         if(aa >= a_min_emu){
 	       //printf("COSMO %le %le %le %le %le %le\n",COSMO_emu[0],COSMO_emu[1],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5]);
+          COSMO_emu[6] = cosmology.wa; // must be set within redshift loop since emu internally resets the COSMO_emu value to (-w_0-w_a)^(1/4)
           emu(COSMO_emu,ystar,kstar);
           for (k=0; k<351; k++){
             kstar[k]=ystar[k];
-            p_emu[k]=ystar[k+351]/Delta_NL_Halofit(kstar[k]/cosmology.h0,aa);
+            p_emu[k]=ystar[k]*kstar[k]*kstar[k]*kstar[k]/(2.0*constants.pi_sqr)/Delta_NL_Halofit(kstar[k]/cosmology.h0,aa);
 	         //printf("%le %le\n",kstar[k],p_emu[k]);
           }
           gsl_spline_init (timspline, kstar, p_emu, 351);
@@ -1232,7 +1243,7 @@ double Delta_NL_emu_only(double k_NL,double a)
    COSMO_emu[6] = cosmology.wa; // must be set within redshift loop since emu internally resets the COSMO_emu value to (-w_0-w_a)^(1/4)
    emu(COSMO_emu,ystar,kstar);
    for (k=0; k<351; k++){
-    p_emu[k]=ystar[k];
+    p_emu[k]=ystar[k]*kstar[k]*kstar[k]*kstar[k]/(2.0*constants.pi_sqr);
       //printf("%le %le\n",kstar[k],p_emu[k]);
   }
   gsl_spline_init (timspline, kstar, p_emu, 351);

@@ -169,9 +169,9 @@ void emu(double *xstar, double *ystar, double *kstar) {
      */
     
     // Transform w_a into (-w_0-w_a)^(1/4)
-    printf("before %le %le\n",xstar[5],xstar[6]);
+//    printf("before %le %le\n",xstar[5],xstar[6]);
     xstar[6] = pow(-xstar[5]-xstar[6], 0.25);
-    printf("after %le %le\n",xstar[5],xstar[6]);
+ //   printf("after %le %le\n",xstar[5],xstar[6]);
     // Check the inputs to make sure we're interpolating.
     for(i=0; i<p; i++) {
         if((xstar[i] < xmin[i]) || (xstar[i] > xmax[i])) {
