@@ -26,7 +26,7 @@
 #define ns_min_emu 8.500000e-01
 #define w_max_emu -7.000000e-01
 #define w_min_emu -1.300000e+00
-#define wa_max_emu 1.28 
+#define wa_max_emu 1.29 
 #define wa_min_emu 0.3 //value correspond to -(w_0+w_a)^(1/4)
 #define onuhh_max_emu 0.01
 #define onuhh_min_emu -0.000000001 //slighyl smaller than 0 since problems otherwise if Omega_nu=0.0
@@ -1002,20 +1002,24 @@ void determine_emu_cosmo_calib(double *COSMO_emu, int *calibflag)
     COSMO_emu[5]=w_max_emu-0.000001;
     *calibflag=1; 
   }   
-  if(pow(-COSMO_emu[5]-COSMO_emu[6], 0.25) <= wa_min_emu){  
-    COSMO_emu[6]=-(pow((wa_min_emu+0.000001),4)+COSMO_emu[5]);
-//    printf("w_a< wa_min: %e->%e, %e %e\n",cosmology.wa,COSMO_emu[6],COSMO_emu[5],pow(-COSMO_emu[5]-COSMO_emu[6], 0.25));
-    *calibflag=1; 
-  }
-  if(pow(-COSMO_emu[5]-COSMO_emu[6], 0.25) >= wa_max_emu){  
-    COSMO_emu[6]=-(pow((wa_max_emu-0.000001),4)+COSMO_emu[5]);
-//    printf("w_a> wa_max: %e->%e, %e %e\n",cosmology.wa,COSMO_emu[6],COSMO_emu[5],pow(-COSMO_emu[5]-COSMO_emu[6], 0.25));
-    *calibflag=1; 
-  }
-  if(COSMO_emu[6] >= wa_max_emu){  
-    COSMO_emu[6]= (wa_max_emu-0.000001);
+  if(cosmology.wa <= -1.73){  
+    COSMO_emu[6]= -1.730001;
     *calibflag=1; 
   }    
+  if(cosmology.wa >= 1.28){  
+    COSMO_emu[6]= (1.28-0.000001);
+    *calibflag=1; 
+  }    
+  if(pow(-COSMO_emu[5]-COSMO_emu[6], 0.25) <= wa_min_emu){  
+    COSMO_emu[6]=-(pow((wa_min_emu+0.000001),4)+COSMO_emu[5]);
+ //   printf("w_a< wa_min: %e->%e, %e %e\n",cosmology.wa,COSMO_emu[6],COSMO_emu[5],pow(-COSMO_emu[5]-COSMO_emu[6], 0.25));
+    *calibflag=1; 
+  }
+  else if(pow(-COSMO_emu[5]-COSMO_emu[6], 0.25) >= wa_max_emu){  
+    COSMO_emu[6]=-(pow((wa_max_emu-0.000001),4)+COSMO_emu[5]);
+ //   printf("w_a> wa_max: %e->%e, %e %e\n",cosmology.wa,COSMO_emu[6],COSMO_emu[5],pow(-COSMO_emu[5]-COSMO_emu[6], 0.25));
+    *calibflag=1; 
+  }
   if(COSMO_emu[7]<= onuhh_min_emu){  
     COSMO_emu[7]=onuhh_min_emu+0.000001;
     *calibflag=1; 
@@ -1130,7 +1134,7 @@ double Delta_NL_emu(double k_NL,double a)
     cosmology.w0=COSMO_emu[5];
     cosmology.wa=COSMO_emu[6];
     cosmology.Omega_nu=COSMO_emu[7];
-    double wa_temp = COSMO_emu[6];
+    double wa_temp = 1.0*COSMO_emu[6];
    // printf("\n\n\nCosmo %le %le %le %le %le %le %le\n",COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5],COSMO_emu[6]);
  
     if (table_P_NL_halofit_calibrate!=0) free_double_matrix(table_P_NL_halofit_calibrate,0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
@@ -1147,6 +1151,7 @@ double Delta_NL_emu(double k_NL,double a)
           COSMO_emu[8]=0.01;
         }
         if(aa >= a_min_emu){
+          //printf("%e %e\n",wa_temp,COSMO_emu[6]);
           COSMO_emu[6] = wa_temp; // must be set within redshift loop since emu internally resets the COSMO_emu value to (-w_0-w_a)^(1/4)
           emu(COSMO_emu,ystar,kstar);
           for (k=0; k<351; k++){
