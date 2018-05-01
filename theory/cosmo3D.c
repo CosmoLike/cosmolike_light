@@ -26,7 +26,7 @@
 #define ns_min_emu 8.500000e-01
 #define w_max_emu -7.000000e-01
 #define w_min_emu -1.300000e+00
-#define wa_max_emu 1.29 //value correspond to -(w_0+w_a)^(1/4)
+#define wa_max_emu 1.28 //value correspond to -(w_0+w_a)^(1/4)
 #define wa_min_emu 0.3 //value correspond to -(w_0+w_a)^(1/4)
 #define onuhh_max_emu 0.01
 #define onuhh_min_emu -0.000000001 //slighyl smaller than 0 since problems otherwise if Omega_nu=0.0
@@ -1006,8 +1006,8 @@ void determine_emu_cosmo_calib(double *COSMO_emu, int *calibflag)
     COSMO_emu[6]=-(pow((wa_min_emu+0.000001),4)+COSMO_emu[5]);
     *calibflag=1; 
   }
-  if(pow(-COSMO_emu[5]-COSMO_emu[6], 0.25) >= wa_max_emu){  
-    COSMO_emu[6]=(pow((wa_min_emu-0.000001),4)+COSMO_emu[5]);
+  if(COSMO_emu[6] >= wa_max_emu){  
+    COSMO_emu[6]= (wa_max_emu-0.000001);
     *calibflag=1; 
   }    
   if(COSMO_emu[7]<= onuhh_min_emu){  
