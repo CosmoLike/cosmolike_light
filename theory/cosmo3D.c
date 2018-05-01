@@ -26,7 +26,7 @@
 #define ns_min_emu 8.500000e-01
 #define w_max_emu -7.000000e-01
 #define w_min_emu -1.300000e+00
-#define wa_max_emu 1.28 //value correspond to -(w_0+w_a)^(1/4)
+#define wa_max_emu 1.28 
 #define wa_min_emu 0.3 //value correspond to -(w_0+w_a)^(1/4)
 #define onuhh_max_emu 0.01
 #define onuhh_min_emu -0.000000001 //slighyl smaller than 0 since problems otherwise if Omega_nu=0.0
@@ -994,16 +994,22 @@ void determine_emu_cosmo_calib(double *COSMO_emu, int *calibflag)
     COSMO_emu[4]=ns_max_emu-0.000001;
     *calibflag=1;   
   }    
-  if(cosmology.w0<= w_min_emu){  
+  if(COSMO_emu[5]<= w_min_emu){  
     COSMO_emu[5]=w_min_emu+0.000001;
     *calibflag=1; 
   }
-  if(cosmology.w0>= w_max_emu){  
+  if(COSMO_emu[5]>= w_max_emu){  
     COSMO_emu[5]=w_max_emu-0.000001;
     *calibflag=1; 
   }   
   if(pow(-COSMO_emu[5]-COSMO_emu[6], 0.25) <= wa_min_emu){  
     COSMO_emu[6]=-(pow((wa_min_emu+0.000001),4)+COSMO_emu[5]);
+//    printf("w_a< wa_min: %e->%e, %e %e\n",cosmology.wa,COSMO_emu[6],COSMO_emu[5],pow(-COSMO_emu[5]-COSMO_emu[6], 0.25));
+    *calibflag=1; 
+  }
+  if(pow(-COSMO_emu[5]-COSMO_emu[6], 0.25) >= wa_max_emu){  
+    COSMO_emu[6]=-(pow((wa_max_emu-0.000001),4)+COSMO_emu[5]);
+//    printf("w_a> wa_max: %e->%e, %e %e\n",cosmology.wa,COSMO_emu[6],COSMO_emu[5],pow(-COSMO_emu[5]-COSMO_emu[6], 0.25));
     *calibflag=1; 
   }
   if(COSMO_emu[6] >= wa_max_emu){  
@@ -1031,7 +1037,7 @@ double Delta_NL_emu(double k_NL,double a)
   static double **table_P_NL_halofit_calibrate=0;
 
   double aa,klog,val; 
-  double COSMO_orig[9],COSMO_emu[9],ystar[351],kstar[351],p_emu[351],emu_min,emu_max,k_max_emu,k_min_emu;
+  double COSMO_emu[9],COSMO_orig[9],ystar[351],kstar[351],p_emu[351],emu_min,emu_max,k_max_emu,k_min_emu;
   int type=1,calibflag=0;
   int i,j,k;
 
@@ -1114,19 +1120,21 @@ double Delta_NL_emu(double k_NL,double a)
     COSMO_orig[5] = cosmology.w0;
     COSMO_orig[6] = cosmology.wa;
     COSMO_orig[7] = cosmology.Omega_nu;
-
+      // set cosmology to compute the Halofit calibration power spectrum 
+    cosmology.Omega_m=COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3];
+    cosmology.Omega_v=1.0-cosmology.Omega_m;
+    cosmology.omb=COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3];
+    cosmology.sigma_8=COSMO_emu[2];
+    cosmology.h0 =COSMO_emu[3];
+    cosmology.n_spec=COSMO_emu[4];
+    cosmology.w0=COSMO_emu[5];
+    cosmology.wa=COSMO_emu[6];
+    cosmology.Omega_nu=COSMO_emu[7];
+    double wa_temp = COSMO_emu[6];
+   // printf("\n\n\nCosmo %le %le %le %le %le %le %le\n",COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3],COSMO_emu[2],COSMO_emu[3],COSMO_emu[4],COSMO_emu[5],COSMO_emu[6]);
+ 
     if (table_P_NL_halofit_calibrate!=0) free_double_matrix(table_P_NL_halofit_calibrate,0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
         table_P_NL_halofit_calibrate = create_double_matrix(0, Ntable.N_a-1, 0,Ntable.N_k_nlin-1);     
-      // set cosmology to compute the Halofit calibration power spectrum 
-      cosmology.Omega_m=COSMO_emu[0]/COSMO_emu[3]/COSMO_emu[3];
-      cosmology.Omega_v=1.0-cosmology.Omega_m;
-      cosmology.omb=COSMO_emu[1]/COSMO_emu[3]/COSMO_emu[3];
-      cosmology.sigma_8=COSMO_emu[2];
-      cosmology.h0 =COSMO_emu[3];
-      cosmology.n_spec=COSMO_emu[4];
-      cosmology.w0=COSMO_emu[5];
-      cosmology.wa=COSMO_emu[6];
-      cosmology.Omega_nu=COSMO_emu[7];
 
       Delta_halofit(table_P_NL_halofit_calibrate,logkmin, logkmax, dk, da);
 
@@ -1139,7 +1147,7 @@ double Delta_NL_emu(double k_NL,double a)
           COSMO_emu[8]=0.01;
         }
         if(aa >= a_min_emu){
-          COSMO_emu[6] = cosmology.wa; // must be set within redshift loop since emu internally resets the COSMO_emu value to (-w_0-w_a)^(1/4)
+          COSMO_emu[6] = wa_temp; // must be set within redshift loop since emu internally resets the COSMO_emu value to (-w_0-w_a)^(1/4)
           emu(COSMO_emu,ystar,kstar);
           for (k=0; k<351; k++){
             p_emu[k]=ystar[k]*kstar[k]*kstar[k]*kstar[k]/(2.0*constants.pi_sqr)/Delta_NL_Halofit(kstar[k]/cosmology.h0,aa);
