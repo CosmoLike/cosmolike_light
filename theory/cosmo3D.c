@@ -742,9 +742,9 @@ double p_lin(double k,double a)
       }
     }
   }
-  if (k/cosmology.coverH0< exp(logkmin) || k/cosmology.coverH0 > exp(logkmax)) return 0.0;
+  if (k/cosmology.coverH0 > exp(logkmax)) return 0.0;
   klog = log(k/cosmology.coverH0);
-  val = interpol2d(table_P_Lz, Ntable.N_a, limits.a_min, 1., da, a, Ntable.N_k_lin, logkmin, logkmax, dk, klog, 1.0, 1.0);
+  val = interpol2d(table_P_Lz, Ntable.N_a, limits.a_min, 1., da, a, Ntable.N_k_lin, logkmin, logkmax, dk, klog, 3.0+cosmology.n_spec, 0.0);
   if(isnan(val) || (k==0)) return 0.0;
   return 2.0*constants.pi_sqr*exp(val)/k/k/k;     
 }
